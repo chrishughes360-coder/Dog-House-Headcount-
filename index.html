@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🐾 Dog Headcount</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+```
+:root {
+  --cream: #fef9f0;
+  --peach: #fde8c8;
+  --tan: #e8c49a;
+  --brown: #6b3a1f;
+  --mid-brown: #a0694a;
+  --dark: #4a2c0a;
+  --orange: #d4763b;
+  --orange-dark: #bf5e28;
+  --green: #4caf60;
+  --green-dark: #3ea043;
+  --green-light: #d4edda;
+  --green-border: #82c991;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--cream) 0%, var(--peach) 50%, #fbd4a0 100%);
+  font-family: 'Lato', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 16px 80px;
+}
+
+/* Paw print background pattern */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Ccircle cx='40' cy='44' r='10' fill='%23e8c49a' opacity='0.3'/%3E%3Ccircle cx='27' cy='32' r='5' fill='%23e8c49a' opacity='0.3'/%3E%3Ccircle cx='53' cy='32' r='5' fill='%23e8c49a' opacity='0.3'/%3E%3Ccircle cx='33' cy='24' r='4' fill='%23e8c49a' opacity='0.3'/%3E%3Ccircle cx='47' cy='24' r='4' fill='%23e8c49a' opacity='0.3'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 500px;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 28px;
+  animation: fadeDown 0.6s ease both;
+}
+.header .paw { font-size: 52px; display: block; margin-bottom: 6px; }
+.header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 38px;
+  font-weight: 900;
+  color: var(--brown);
+  letter-spacing: -1px;
+  line-height: 1;
+}
+.header p {
+  color: var(--mid-brown);
+  margin-top: 8px;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+}
+
+/* Progress */
+.progress-wrap {
+  margin-bottom: 20px;
+  animation: fadeUp 0.5s 0.1s ease both;
+}
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--mid-brown);
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+.progress-track {
+  height: 13px;
+  border-radius: 99px;
+  background: #f0d5b0;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+}
+.progress-bar {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #e88a3b, var(--orange));
+  transition: width 0.45s cubic-bezier(.4,0,.2,1), background 0.4s ease;
+  width: 0%;
+}
+.progress-bar.complete {
+  background: linear-gradient(90deg, #57b85c, var(--green-dark));
+}
+
+/* Dog list */
+.dog-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dog-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 15px;
+  background: white;
+  border: 2px solid var(--tan);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(160,100,50,0.07);
+  transition: border-color 0.2s, background 0.2s, transform 0.1s;
+  user-select: none;
+  animation: fadeUp 0.4s ease both;
+}
+.dog-card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(160,100,50,0.12); }
+.dog-card:active { transform: scale(0.99); }
+.dog-card.checked {
+  background: linear-gradient(90deg, #d4edda, #c8e8d0);
+  border-color: var(--green-border);
+}
+
+.dog-checkbox {
+  width: 27px;
+  height: 27px;
+  border-radius: 7px;
+  border: 2.5px solid var(--tan);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  font-size: 15px;
+  color: white;
+  font-weight: bold;
+}
+.dog-card.checked .dog-checkbox {
+  border-color: var(--green);
+  background: var(--green);
+}
+
+.dog-emoji { font-size: 22px; flex-shrink: 0; }
+
+.dog-name {
+  flex: 1;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--dark);
+  transition: color 0.2s, text-decoration 0.2s;
+}
+.dog-card.checked .dog-name {
+  color: #2d7a3a;
+  text-decoration: line-through;
+  text-decoration-color: #82c991;
+}
+
+.dog-status {
+  font-size: 12px;
+  font-weight: 700;
+  color: #c49a6c;
+  min-width: 50px;
+  text-align: right;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+.dog-card.checked .dog-status { color: var(--green); }
+
+.dog-remove {
+  background: none;
+  border: none;
+  color: #d4b090;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 6px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+.dog-remove:hover { color: #c0392b; }
+
+/* Add dog section */
+.add-section {
+  margin-top: 22px;
+  animation: fadeUp 0.5s 0.2s ease both;
+}
+.add-label {
+  font-size: 11px;
+  color: var(--mid-brown);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 7px;
+}
+.add-row {
+  display: flex;
+  gap: 8px;
+}
+.add-input {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 2px solid var(--tan);
+  font-size: 15px;
+  font-family: 'Lato', sans-serif;
+  background: white;
+  color: var(--dark);
+  outline: none;
+  box-shadow: 0 2px 6px rgba(160,100,50,0.07);
+  transition: border-color 0.2s;
+}
+.add-input:focus { border-color: var(--orange); }
+.add-btn {
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: none;
+  background: var(--orange);
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(180,90,30,0.2);
+  transition: background 0.15s, transform 0.1s;
+  line-height: 1;
+}
+.add-btn:hover { background: var(--orange-dark); }
+.add-btn:active { transform: scale(0.95); }
+
+/* Action buttons */
+.actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: fadeUp 0.5s 0.25s ease both;
+}
+.btn-reset {
+  padding: 10px 22px;
+  border-radius: 12px;
+  border: 2px solid var(--tan);
+  background: white;
+  color: var(--mid-brown);
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Lato', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-reset:hover { background: #fef0e0; border-color: var(--orange); }
+
+.btn-go {
+  padding: 10px 26px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(90deg, #57b85c, var(--green-dark));
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Lato', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 3px 14px rgba(60,160,67,0.32);
+  animation: pulse 1.2s infinite;
+  display: none;
+}
+.btn-go.visible { display: block; }
+
+/* Banner */
+.banner {
+  margin-top: 26px;
+  padding: 22px 32px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #d4edda, #c3e6cb);
+  border: 2px solid var(--green-border);
+  text-align: center;
+  box-shadow: 0 4px 18px rgba(60,160,67,0.15);
+  display: none;
+  animation: popIn 0.4s cubic-bezier(.34,1.56,.64,1) both;
+}
+.banner.visible { display: block; }
+.banner-emoji { font-size: 40px; }
+.banner-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #2d7a3a;
+  margin-top: 6px;
+}
+.banner-sub { color: #4a9e55; font-size: 14px; margin-top: 4px; }
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes checkPop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+.dog-card.just-checked { animation: checkPop 0.25s ease; }
+```
+
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <span class="paw">🐾</span>
+    <h1>Dog Headcount</h1>
+    <p>Mark every pup before you leave!</p>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-labels">
+      <span id="progress-text">0 of 18 accounted for</span>
+      <span id="progress-right">18 remaining</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+  </div>
+
+  <div class="dog-list" id="dog-list"></div>
+
+  <div class="add-section">
+    <div class="add-label">Add a new dog</div>
+    <div class="add-row">
+      <input class="add-input" id="add-input" type="text" placeholder="New dog's name..." />
+      <button class="add-btn" id="add-btn" title="Add dog">+</button>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-reset" id="btn-reset">↩ Reset All</button>
+    <button class="btn-go" id="btn-go">🚗 All Good — Let's Go!</button>
+  </div>
+
+  <div class="banner" id="banner">
+    <div class="banner-emoji">🎉</div>
+    <div class="banner-title" id="banner-title">All 18 dogs accounted for!</div>
+    <div class="banner-sub">Safe travels, Windsor, Squeaks, and the whole crew! 🐾</div>
+  </div>
+
+</div>
+
+<script>
+  const EMOJIS = ["🐶","🐕","🦮","🐕‍🦺","🐩"];
+  const INITIAL = [
+    "Windsor","Squeaks","Olive","York","Nutmeg","Cinnamon",
+    "Lulu","Carlos","Mercury","Chico","Pixie","Delilah",
+    "Phil","Henry","Max","Cleo","Anchovie","Oscar"
+  ];
+
+  let dogs = INITIAL.map((name, i) => ({ id: i + 1, name, checked: false }));
+  let nextId = dogs.length + 1;
+  let allClearShown = false;
+
+  const listEl = document.getElementById('dog-list');
+  const progressBar = document.getElementById('progress-bar');
+  const progressText = document.getElementById('progress-text');
+  const progressRight = document.getElementById('progress-right');
+  const btnGo = document.getElementById('btn-go');
+  const banner = document.getElementById('banner');
+  const bannerTitle = document.getElementById('banner-title');
+  const addInput = document.getElementById('add-input');
+  const addBtn = document.getElementById('add-btn');
+  const btnReset = document.getElementById('btn-reset');
+
+  function emoji(i) { return EMOJIS[i % EMOJIS.length]; }
+
+  function render() {
+    const total = dogs.length;
+    const checked = dogs.filter(d => d.checked).length;
+    const allChecked = total > 0 && checked === total;
+
+    // Progress
+    const pct = total ? (checked / total) * 100 : 0;
+    progressBar.style.width = pct + '%';
+    progressBar.classList.toggle('complete', allChecked);
+    progressText.textContent = `${checked} of ${total} accounted for`;
+    progressRight.textContent = allChecked ? '✅ All present!' : `${total - checked} remaining`;
+
+    // Go button
+    if (allChecked) {
+      btnGo.classList.add('visible');
+    } else {
+      btnGo.classList.remove('visible');
+      allClearShown = false;
+      banner.classList.remove('visible');
+    }
+
+    // List
+    listEl.innerHTML = '';
+    dogs.forEach((dog, i) => {
+      const card = document.createElement('div');
+      card.className = 'dog-card' + (dog.checked ? ' checked' : '');
+      card.style.animationDelay = (i * 0.03) + 's';
+      card.innerHTML = `
+        <div class="dog-checkbox">${dog.checked ? '✓' : ''}</div>
+        <span class="dog-emoji">${emoji(i)}</span>
+        <span class="dog-name">${dog.name}</span>
+        <span class="dog-status">${dog.checked ? '✓ Here' : '—'}</span>
+        <button class="dog-remove" title="Remove" data-id="${dog.id}">×</button>
+      `;
+      card.addEventListener('click', (e) => {
+        if (e.target.classList.contains('dog-remove')) return;
+        toggleDog(dog.id, card);
+      });
+      card.querySelector('.dog-remove').addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeDog(dog.id);
+      });
+      listEl.appendChild(card);
+    });
+
+    // Banner
+    bannerTitle.textContent = `All ${total} ${total === 1 ? 'dog' : 'dogs'} accounted for!`;
+  }
+
+  function toggleDog(id, cardEl) {
+    dogs = dogs.map(d => d.id === id ? { ...d, checked: !d.checked } : d);
+    allClearShown = false;
+    if (cardEl) {
+      cardEl.classList.add('just-checked');
+      setTimeout(() => cardEl.classList.remove('just-checked'), 300);
+    }
+    render();
+  }
+
+  function removeDog(id) {
+    dogs = dogs.filter(d => d.id !== id);
+    allClearShown = false;
+    render();
+  }
+
+  function addDog() {
+    const name = addInput.value.trim();
+    if (!name) return;
+    dogs.push({ id: nextId++, name, checked: false });
+    addInput.value = '';
+    render();
+    // Scroll to bottom of list
+    setTimeout(() => listEl.lastChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+  }
+
+  addBtn.addEventListener('click', addDog);
+  addInput.addEventListener('keydown', e => { if (e.key === 'Enter') addDog(); });
+
+  btnReset.addEventListener('click', () => {
+    dogs = dogs.map(d => ({ ...d, checked: false }));
+    allClearShown = false;
+    banner.classList.remove('visible');
+    render();
+  });
+
+  btnGo.addEventListener('click', () => {
+    if (!allClearShown) {
+      allClearShown = true;
+      banner.classList.add('visible');
+      banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  });
+
+  render();
+</script>
+
+</body>
+</html>
